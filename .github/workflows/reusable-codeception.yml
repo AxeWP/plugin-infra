@@ -1,0 +1,143 @@
+name: Run Codeception Tests
+
+on:
+  workflow_call:
+    inputs:
+      php-version:
+        description: 'PHP version to use'
+        required: true
+        type: string
+      wp-version:
+        description: 'WordPress version (latest, trunk, or X.Y)'
+        required: false
+        type: string
+        default: 'latest'
+      multisite:
+        description: 'Run multisite tests'
+        required: false
+        type: boolean
+        default: false
+      coverage:
+        description: 'Enable code coverage'
+        required: false
+        type: boolean
+        default: false
+      functional:
+        description: 'Run functional tests'
+        required: false
+        type: boolean
+        default: true
+      acceptance:
+        description: 'Run acceptance tests'
+        required: false
+        type: boolean
+        default: true
+      wpunit:
+        description: 'Run WPUnit tests'
+        required: false
+        type: boolean
+        default: true
+      unit:
+        description: 'Run unit tests'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  codeception:
+    permissions: {}
+    name: Codeception (PHP ${{ inputs.php-version }}, WP ${{ inputs.wp-version }})${{ inputs.coverage && ' (coverage)' || '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      WP_ENV_PHP_VERSION: ${{ inputs.php-version }}
+      WP_ENV_CORE: ${{ inputs.wp-version == 'trunk' && 'WordPress/WordPress' || inputs.wp-version == 'latest' && 'latest' || format('https://wordpress.org/wordpress-{0}.zip', inputs.wp-version) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          show-progress: ${{ runner.debug == '1' && 'true' || 'false' }}
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
+        with:
+          php-version: ${{ inputs.php-version }}
+          coverage: ${{ inputs.coverage && 'xdebug' || 'none' }}
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Create cache directories
+        run: mkdir -p ~/.wp-env/downloads
+
+      - name: Cache WordPress downloads
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.wp-env/downloads
+          key: ${{ runner.os }}-wp-env-downloads-${{ hashFiles('.wp-env.json') }}
+          restore-keys: |
+            ${{ runner.os }}-wp-env-downloads-
+
+      - name: Start the Docker testing environment
+        uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            ${{ matrix.coverage && 'PCOV_ENABLED=1 ' || '' }}npm run wp-env:test start --${{ inputs.multisite && ' --multisite' || '' }}${{ secrets.ACTIONS_STEP_DEBUG && ' --debug' || '' }}
+
+      - name: Log versions
+        run: |
+          npm run wp-env -- run cli php -- -v
+          npm run wp-env -- run cli wp core version
+
+      - name: Run Codeception acceptance tests
+        if: ${{ inputs.acceptance }}
+        run: npm run test:codecept run acceptance ${{ secrets.ACTIONS_STEP_DEBUG && '--debug' || '' }}
+
+      - name: Run Codeception functional tests
+        if: ${{ inputs.functional }}
+        run: npm run test:codecept run functional ${{ secrets.ACTIONS_STEP_DEBUG && '--debug' || '' }}
+
+      - name: Run Codeception integration tests${{ inputs.coverage && ' (coverage)' || '' }}
+        if: ${{ inputs.wpunit }}
+        run: npm run test:codecept run wpunit ${{ inputs.coverage && '--coverage --coverage-xml --coverage-html' || '' }} ${{ secrets.ACTIONS_STEP_DEBUG && '--debug' || '' }}
+
+      - name: Upload test failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: test-failures-php${{ inputs.php-version }}-wp${{ inputs.wp-version }}
+          path: tests/_output/*.fail.html
+          if-no-files-found: ignore
+
+      - name: Upload HTML coverage report as artifact
+        if: ${{ inputs.coverage }}
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: wp-code-coverage-${{ inputs.php-version }}-${{ inputs.wp-version }}
+          path: tests/_output/coverage
+          overwrite: true
+          if-no-files-found: ignore
+
+      - name: Upload code coverage report
+        if: ${{ inputs.coverage }}
+        continue-on-error: true
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v5.5.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: tests/_output/coverage.xml
+          flags: wpunit
+          fail_ci_if_error: true

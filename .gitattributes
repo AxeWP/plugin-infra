@@ -1,0 +1,22 @@
+# Automatically normalize line endings.
+* text=auto
+
+# Directories
+/.git export-ignore
+/.github export-ignore
+/templates export-ignore
+
+# Don't include the dotfiles for distribution.
+/.* export-ignore
+
+# Root files that are not needed for distribution.
+/composer.lock export-ignore
+/package-lock.json export-ignore
+
+# Mark docs as documentation for GitHub Linguist.
+/docs/ linguist-documentation export-ignore
+/CHANGELOG.md linguist-documentation export-ignore
+
+# Keep license and readme files.
+/LICENSE.md linguist-documentation
+/README.md linguist-documentation

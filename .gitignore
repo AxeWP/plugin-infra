@@ -1,0 +1,15 @@
+# Files
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# AI files
+.gemini/
+.claude/
+AGENTS.md
+GEMINI.md
+CLAUDE.md
+
+# TypeScript
+*.tsbuildinfo

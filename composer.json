@@ -1,0 +1,17 @@
+{
+	"name": "axewp/plugin-infra",
+	"description": "Reusable infra for AxeWP plugins",
+	"type": "library",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"config": {
+		"sort-packages": true
+	},
+	"scripts": {
+		"test": [
+			"composer validate --strict --no-check-lock"
+		]
+	}
+}

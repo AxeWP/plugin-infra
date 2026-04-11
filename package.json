@@ -1,0 +1,15 @@
+{
+	"name": "@axewp/plugin-infra",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@types/node": "^22.19.17",
+		"@wordpress/prettier-config": "^4.43.0",
+		"lefthook": "^2.1.5",
+		"lint-staged": "^16.4.0",
+		"prettier": "npm:wp-prettier@^3"
+	}
+}

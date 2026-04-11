@@ -1,0 +1,21 @@
+#####
+# Files and directories to ignore if the repository is installed as a Composer package.
+#####
+
+## Directories
+/.git
+/.github
+/.lefthook.yml
+/templates
+
+## Files
+.*
+CHANGELOG.md
+composer.json
+composer.lock
+package.json
+package-lock.json
+README.md
+readme.txt
+release-please-config.json
+tsconfig.json

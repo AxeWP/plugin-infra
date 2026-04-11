@@ -1,0 +1,63 @@
+name: Build
+on:
+  workflow_call:
+    inputs:
+      php-version:
+        required: true
+        type: string
+        description: 'The PHP version to use for the build.'
+      artifact-name:
+        required: true
+        type: string
+        description: 'The name of the artifact to upload'
+      artifact-path:
+        required: true
+        type: string
+        description: 'The path of the artifact to upload'
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          show-progress: ${{ runner.debug == '1' && 'true' || 'false' }}
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
+        with:
+          php-version: ${{ inputs.php-version }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
+        with:
+          composer-options: '--no-dev --optimize-autoloader'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build plugin for release
+        run: npm run build:prod
+
+      - name: Create plugin zip
+        run: npm run plugin-zip
+
+      - name: Upload plugin zip artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.artifact-path }}
+          if-no-files-found: error

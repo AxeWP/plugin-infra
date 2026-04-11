@@ -1,0 +1,5 @@
+# Customize hook commands and package manager flags as needed.
+pre-commit:
+  commands:
+    lint-staged:
+      run: npx --no-install lint-staged
