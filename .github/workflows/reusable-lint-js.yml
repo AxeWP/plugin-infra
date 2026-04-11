@@ -33,15 +33,15 @@ jobs:
 
       - name: Run TypeScript check
         id: typescript
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         run: npm run lint:js:types
 
       - name: Run Stylelint
         id: stylelint
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         run: npm run lint:css
 
       - name: Run Prettier check
         id: prettier
-        if: !cancelled()
+        if: ${{ !cancelled() }}
         run: npm run format -- --check
