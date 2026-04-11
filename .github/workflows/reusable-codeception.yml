@@ -43,6 +43,11 @@ on:
         type: boolean
         default: true
 
+    secrets:
+      CODECOV_TOKEN:
+        description: 'Codecov upload token'
+        required: false
+
 jobs:
   codeception:
     permissions: {}
@@ -105,15 +110,15 @@ jobs:
 
       - name: Run Codeception acceptance tests
         if: ${{ inputs.acceptance }}
-        run: npm run test:codecept run acceptance ${{ secrets.ACTIONS_STEP_DEBUG && '--debug' || '' }}
+        run: npm run test:codecept run acceptance ${{ runner.debug == '1' && '--debug' || '' }}
 
       - name: Run Codeception functional tests
         if: ${{ inputs.functional }}
-        run: npm run test:codecept run functional ${{ secrets.ACTIONS_STEP_DEBUG && '--debug' || '' }}
+        run: npm run test:codecept run functional ${{ runner.debug == '1' && '--debug' || '' }}
 
       - name: Run Codeception integration tests${{ inputs.coverage && ' (coverage)' || '' }}
         if: ${{ inputs.wpunit }}
-        run: npm run test:codecept run wpunit ${{ inputs.coverage && '--coverage --coverage-xml --coverage-html' || '' }} ${{ secrets.ACTIONS_STEP_DEBUG && '--debug' || '' }}
+        run: npm run test:codecept run wpunit ${{ inputs.coverage && '--coverage --coverage-xml --coverage-html' || '' }} ${{ runner.debug == '1' && '--debug' || '' }}
 
       - name: Upload test failure artifacts
         if: failure()

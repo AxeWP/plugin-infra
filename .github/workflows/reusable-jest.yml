@@ -8,6 +8,10 @@ on:
         required: false
         type: boolean
         default: true
+    secrets:
+      CODECOV_TOKEN:
+        description: 'Codecov upload token'
+        required: false
 
 permissions: {}
 
