@@ -1,7 +1,28 @@
-name: Run JS Lint
+name: Run JS Lints
 
 on:
   workflow_call:
+    inputs:
+      eslint:
+        description: 'Run ESLint check'
+        required: false
+        type: boolean
+        default: true
+      tsc:
+        description: 'Run TypeScript check'
+        required: false
+        type: boolean
+        default: true
+      stylelint:
+        description: 'Run Stylelint check'
+        required: false
+        type: boolean
+        default: true
+      prettier:
+        description: 'Run Prettier check'
+        required: false
+        type: boolean
+        default: true
 
 permissions: {}
 
@@ -29,19 +50,20 @@ jobs:
 
       - name: Run ESLint
         id: eslint
+        if: ${{ inputs.eslint }}
         run: npm run lint:js
 
       - name: Run TypeScript check
         id: typescript
-        if: ${{ !cancelled() }}
+        if: ${{ inputs.tsc && !cancelled() }}
         run: npm run lint:js:types
 
       - name: Run Stylelint
         id: stylelint
-        if: ${{ !cancelled() }}
+        if: ${{ inputs.stylelint && !cancelled() }}
         run: npm run lint:css
 
       - name: Run Prettier check
         id: prettier
-        if: ${{ !cancelled() }}
+        if: ${{ inputs.prettier && !cancelled() }}
         run: npm run format -- --check
