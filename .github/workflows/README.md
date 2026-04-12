@@ -14,7 +14,7 @@ The following reusable workflows are available for consumption by downstream plu
 | [reusable-phpcs.yml](reusable-phpcs.yml)                                       | Run PHPCS coding standards           | `php-version`                                                                                      |
 | [reusable-e2e.yml](reusable-e2e.yml)                                           | Run Playwright E2E tests             | `php-version`                                                                                      |
 | [reusable-jest.yml](reusable-jest.yml)                                         | Run Jest unit tests                  | `coverage`                                                                                         |
-| [reusable-lint-js.yml](reusable-lint-js.yml)                                   | Run ESLint, Stylelint, Prettier, TSC | None                                                                                               |
+| [reusable-js-lints.yml](reusable-js-lints.yml)                                 | Run ESLint, Stylelint, Prettier, TSC | None                                                                                               |
 | [reusable-build.yml](reusable-build.yml)                                       | Build plugin artifact                | `php-version`, `artifact-name`, `artifact-path`                                                    |
 | [reusable-wp-playground-pr-preview.yml](reusable-wp-playground-pr-preview.yml) | Post WP Playground preview           | `run-id`, `artifact-prefix`, `artifact-filename`, `artifacts-to-keep`                              |
 
@@ -92,11 +92,15 @@ Runs Jest unit tests for JavaScript.
 - **Secrets:**
   - `CODECOV_TOKEN` (optional): Token for uploading coverage to Codecov.
 
-### reusable-lint-js.yml
+### reusable-js-lints.yml
 
 Runs ESLint, Stylelint, Prettier, and TypeScript checks.
 
-- **Inputs:** None.
+- **Inputs:**
+  - `eslint` (boolean, default: `true`): Run ESLint.
+  - `stylelint` (boolean, default: `true`): Run Stylelint.
+  - `prettier` (boolean, default: `true`): Run Prettier.
+  - `tsc` (boolean, default: `true`): Run TypeScript
 
 ### reusable-build.yml
 
@@ -148,7 +152,10 @@ name: CI
 on: [push, pull_request]
 jobs:
   lint:
-    uses: AxeWP/plugin-infra/.github/workflows/reusable-lint-js.yml@main
+    uses: AxeWP/plugin-infra/.github/workflows/reusable-js-lints.yml@main
+    with:
+      prettier: true
+      tsc: false
   phpstan:
     uses: AxeWP/plugin-infra/.github/workflows/reusable-phpstan.yml@main
     with:
