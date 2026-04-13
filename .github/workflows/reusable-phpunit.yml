@@ -73,7 +73,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           command: |
-            npm run wp-env start --${{ inputs.multisite && ' --multisite' || '' }}${{ inputs.coverage && ' --xdebug=coverage' || '' }}
+            npm run wp-env:test start --${{ inputs.multisite && ' --multisite' || '' }}${{ inputs.coverage && ' --xdebug=coverage' || '' }}
 
       - name: Log versions
         run: |

@@ -105,8 +105,8 @@ jobs:
 
       - name: Log versions
         run: |
-          npm run wp-env -- run cli php -- -v
-          npm run wp-env -- run cli wp core version
+          npm run wp-env:test -- run cli php -- -v
+          npm run wp-env:test -- run cli wp core version
 
       - name: Run Codeception acceptance tests
         if: ${{ inputs.acceptance }}
