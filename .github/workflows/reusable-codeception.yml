@@ -60,13 +60,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           show-progress: ${{ runner.debug == '1' && 'true' || 'false' }}
           persist-credentials: false
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@accd6127cb78bee3e8082180cb391013d204ef9f # v2.37.0
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
         with:
           php-version: ${{ inputs.php-version }}
           coverage: ${{ inputs.coverage && 'xdebug' || 'none' }}
@@ -76,7 +76,7 @@ jobs:
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
 
       - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -88,7 +88,7 @@ jobs:
         run: mkdir -p ~/.wp-env/downloads
 
       - name: Cache WordPress downloads
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.wp-env/downloads
           key: ${{ runner.os }}-wp-env-downloads-${{ hashFiles('.wp-env.json') }}
@@ -101,7 +101,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           command: |
-            ${{ matrix.coverage && 'PCOV_ENABLED=1 ' || '' }}npm run wp-env:test start --${{ inputs.multisite && ' --multisite' || '' }}${{ secrets.ACTIONS_STEP_DEBUG && ' --debug' || '' }}
+            ${{ inputs.coverage && 'PCOV_ENABLED=1 ' || '' }}npm run wp-env:test start --${{ inputs.multisite && ' --multisite' || '' }}${{ secrets.ACTIONS_STEP_DEBUG && ' --debug' || '' }}
 
       - name: Log versions
         run: |
@@ -122,7 +122,7 @@ jobs:
 
       - name: Upload test failure artifacts
         if: failure()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-failures-php${{ inputs.php-version }}-wp${{ inputs.wp-version }}
           path: tests/_output/*.fail.html
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload HTML coverage report as artifact
         if: ${{ inputs.coverage }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: wp-code-coverage-${{ inputs.php-version }}-${{ inputs.wp-version }}
           path: tests/_output/coverage
@@ -140,7 +140,7 @@ jobs:
       - name: Upload code coverage report
         if: ${{ inputs.coverage }}
         continue-on-error: true
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v5.5.2
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: tests/_output/coverage.xml

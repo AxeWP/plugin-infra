@@ -6,17 +6,16 @@ This directory contains GitHub Actions workflows for WordPress plugin developmen
 
 The following reusable workflows are available for consumption by downstream plugins:
 
-| Workflow                                                                       | Purpose                              | Inputs                                                                                             |
-| ------------------------------------------------------------------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| [reusable-phpunit.yml](reusable-phpunit.yml)                                   | Run PHPUnit tests                    | `php-version`, `wp-version`, `coverage`, `multisite`                                               |
-| [reusable-codeception.yml](reusable-codeception.yml)                           | Run Codeception tests                | `php-version`, `wp-version`, `coverage`, `multisite`, `functional`, `acceptance`, `wpunit`, `unit` |
-| [reusable-phpstan.yml](reusable-phpstan.yml)                                   | Run PHPStan static analysis          | `php-version`                                                                                      |
-| [reusable-phpcs.yml](reusable-phpcs.yml)                                       | Run PHPCS coding standards           | `php-version`                                                                                      |
-| [reusable-e2e.yml](reusable-e2e.yml)                                           | Run Playwright E2E tests             | `php-version`                                                                                      |
-| [reusable-jest.yml](reusable-jest.yml)                                         | Run Jest unit tests                  | `coverage`                                                                                         |
-| [reusable-js-lints.yml](reusable-js-lints.yml)                                 | Run ESLint, Stylelint, Prettier, TSC | None                                                                                               |
-| [reusable-build.yml](reusable-build.yml)                                       | Build plugin artifact                | `php-version`, `artifact-name`, `artifact-path`                                                    |
-| [reusable-wp-playground-pr-preview.yml](reusable-wp-playground-pr-preview.yml) | Post WP Playground preview           | `run-id`, `artifact-prefix`, `artifact-filename`, `artifacts-to-keep`                              |
+| Workflow                                             | Purpose                              | Inputs                                                                                             |
+| ---------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| [reusable-phpunit.yml](reusable-phpunit.yml)         | Run PHPUnit tests                    | `php-version`, `wp-version`, `coverage`, `multisite`                                               |
+| [reusable-codeception.yml](reusable-codeception.yml) | Run Codeception tests                | `php-version`, `wp-version`, `coverage`, `multisite`, `functional`, `acceptance`, `wpunit`, `unit` |
+| [reusable-phpstan.yml](reusable-phpstan.yml)         | Run PHPStan static analysis          | `php-version`                                                                                      |
+| [reusable-phpcs.yml](reusable-phpcs.yml)             | Run PHPCS coding standards           | `php-version`                                                                                      |
+| [reusable-e2e.yml](reusable-e2e.yml)                 | Run Playwright E2E tests             | `php-version`                                                                                      |
+| [reusable-jest.yml](reusable-jest.yml)               | Run Jest unit tests                  | `coverage`                                                                                         |
+| [reusable-js-lints.yml](reusable-js-lints.yml)       | Run ESLint, Stylelint, Prettier, TSC | None                                                                                               |
+| [reusable-build.yml](reusable-build.yml)             | Build plugin artifact                | `php-version`, `artifact-name`, `artifact-path`                                                    |
 
 ---
 
@@ -111,16 +110,6 @@ Builds the plugin for production and creates a zip artifact.
   - `artifact-name` (string, required): Name of the artifact to upload.
   - `artifact-path` (string, required): Path of the artifact to upload.
 
-### reusable-wp-playground-pr-preview.yml
-
-Posts a WordPress Playground preview button to Pull Request descriptions.
-
-- **Inputs:**
-  - `run-id` (string, required): The workflow run ID to download artifacts from.
-  - `artifact-prefix` (string, default: `plugin-skeleton-d-pr`): Prefix for the artifact name.
-  - `artifact-filename` (string, default: `plugin-skeleton-d.zip`): Filename of the zip inside the artifact.
-  - `artifacts-to-keep` (string, default: `2`): Number of artifacts to keep per PR.
-
 ---
 
 ## Internal Workflows
@@ -141,7 +130,7 @@ The following workflows are used internally by this repository and are not desig
 | Secret          | Required By                                                 | Notes                                                 |
 | --------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
 | `CODECOV_TOKEN` | `reusable-phpunit`, `reusable-jest`, `reusable-codeception` | Optional — coverage uploads fail silently if missing. |
-| `GITHUB_TOKEN`  | `reusable-wp-playground-pr-preview`, `pr-title.yml`         | Automatically provided by GitHub.                     |
+| `GITHUB_TOKEN`  | `pr-title.yml`                                              | Automatically provided by GitHub.                     |
 
 ## Usage Example
 
