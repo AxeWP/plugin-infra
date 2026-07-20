@@ -10,7 +10,7 @@ Inspired by https://github.com/johnbillion/plugin-infrastructure
 
 ### Reusable GitHub Actions Workflows
 
-11 reusable workflows under `.github/workflows/` for PHPUnit, Codeception, PHPStan, PHPCS, E2E (Playwright), Jest, CSS/JS linting, plugin builds, workflow linting, GraphQL schema linting, and WP Playground PR previews.
+Reusable workflows under `.github/workflows/` for PHPUnit, Codeception, PHPStan, PHPCS, E2E (Playwright), Jest, CSS/JS linting, plugin builds, workflow linting, and GraphQL schema linting.
 
 See [`.github/workflows/README.md`](.github/workflows/README.md) for full documentation, inputs, and copy-paste usage examples.
 
