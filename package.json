@@ -6,7 +6,7 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@types/node": "^24.13.3",
+		"@types/node": "^26.0.0",
 		"@wordpress/prettier-config": "^4.51.0",
 		"lefthook": "^2.1.10",
 		"lint-staged": "^17.1.0",
