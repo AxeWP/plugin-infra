@@ -1,0 +1,23 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig.json",
+
+	// Point this to your TS ruleset.
+	"extends": "@axewp/plugin-infra/tsconfig",
+
+	// Project-specific config.
+	"compilerOptions": {
+		"noEmit": true,
+		"rootDir": ".",
+		"paths": { "@/*": [ "./src/*" ] },
+		"typeRoots": [ "./node_modules/@types" ]
+	},
+	"include": [
+		"**/*.json",
+		"**/*.cjs",
+		"**/*.js",
+		"**/*.mjs",
+		"**/*.ts",
+		"**/*.tsx"
+	],
+	"exclude": [ "build/*", "vendor/*", "node_modules/*", "tests/_output/*" ]
+}
