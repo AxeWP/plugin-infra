@@ -6,18 +6,18 @@ This directory contains GitHub Actions workflows for WordPress plugin developmen
 
 The following reusable workflows are available for consumption by downstream plugins:
 
-| Workflow                                                                   | Purpose                                      | Inputs                                                                                             |
-| -------------------------------------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| [reusable-phpunit.yml](reusable-phpunit.yml)                               | Run PHPUnit tests                            | `php-version`, `wp-version`, `coverage`, `multisite`                                               |
-| [reusable-codeception.yml](reusable-codeception.yml)                       | Run Codeception tests                        | `php-version`, `wp-version`, `coverage`, `multisite`, `functional`, `acceptance`, `wpunit`, `unit` |
-| [reusable-phpstan.yml](reusable-phpstan.yml)                               | Run PHPStan static analysis                  | `php-version`                                                                                      |
-| [reusable-phpcs.yml](reusable-phpcs.yml)                                   | Run PHPCS coding standards                   | `php-version`                                                                                      |
-| [reusable-e2e.yml](reusable-e2e.yml)                                       | Run Playwright E2E tests                     | `php-version`                                                                                      |
-| [reusable-jest.yml](reusable-jest.yml)                                     | Run Jest unit tests                          | `coverage`                                                                                         |
-| [reusable-js-lints.yml](reusable-js-lints.yml)                             | Run ESLint, Stylelint, Prettier, TSC         | `eslint`, `stylelint`, `prettier`, `tsc`                                                           |
-| [reusable-build.yml](reusable-build.yml)                                   | Build plugin artifact                        | `php-version`, `artifact-name`, `artifact-path`                                                    |
-| [reusable-graphql-schema-linter.yml](reusable-graphql-schema-linter.yml)   | Lint WPGraphQL schema + breaking-change diff | `php-version`, `plugin-slug`, `previous-schema-url`                                                |
-| [reusable-upload-schema-artifact.yml](reusable-upload-schema-artifact.yml) | Upload `schema.graphql` to a GitHub release  | `php-version`, `plugin-slug`, `release-tag`                                                        |
+| Workflow                                                                   | Purpose                                      | Inputs                                                                                     |
+| -------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| [reusable-phpunit.yml](reusable-phpunit.yml)                               | Run PHPUnit tests                            | `php-version`, `wp-version`, `coverage`, `multisite`                                       |
+| [reusable-codeception.yml](reusable-codeception.yml)                       | Run Codeception tests                        | `php-version`, `wp-version`, `coverage`, `multisite`, `functional`, `acceptance`, `wpunit` |
+| [reusable-phpstan.yml](reusable-phpstan.yml)                               | Run PHPStan static analysis                  | `php-version`                                                                              |
+| [reusable-phpcs.yml](reusable-phpcs.yml)                                   | Run PHPCS coding standards                   | `php-version`                                                                              |
+| [reusable-e2e.yml](reusable-e2e.yml)                                       | Run Playwright E2E tests                     | `php-version`                                                                              |
+| [reusable-jest.yml](reusable-jest.yml)                                     | Run Jest unit tests                          | `coverage`                                                                                 |
+| [reusable-js-lints.yml](reusable-js-lints.yml)                             | Run ESLint, Stylelint, Prettier, TSC         | `eslint`, `stylelint`, `prettier`, `tsc`                                                   |
+| [reusable-build.yml](reusable-build.yml)                                   | Build plugin artifact                        | `php-version`, `artifact-name`, `artifact-path`                                            |
+| [reusable-graphql-schema-linter.yml](reusable-graphql-schema-linter.yml)   | Lint WPGraphQL schema + breaking-change diff | `php-version`, `plugin-slug`, `previous-schema-url`                                        |
+| [reusable-upload-schema-artifact.yml](reusable-upload-schema-artifact.yml) | Upload `schema.graphql` to a GitHub release  | `php-version`, `plugin-slug`, `release-tag`                                                |
 
 ---
 
@@ -59,7 +59,6 @@ Runs Codeception acceptance, functional, and wpunit tests.
   - `functional` (boolean, default: `true`): Run functional tests.
   - `acceptance` (boolean, default: `true`): Run acceptance tests.
   - `wpunit` (boolean, default: `true`): Run WPUnit tests.
-  - `unit` (boolean, default: `true`): Run unit tests.
 - **Secrets:**
   - `CODECOV_TOKEN` (optional): Token for uploading coverage to Codecov.
 
