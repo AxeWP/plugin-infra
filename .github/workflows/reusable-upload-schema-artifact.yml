@@ -1,0 +1,81 @@
+name: Upload GraphQL Schema to Release
+
+on:
+  workflow_call:
+    inputs:
+      php-version:
+        description: 'PHP version to use'
+        required: true
+        type: string
+      plugin-slug:
+        description: 'Directory name of the plugin inside wp-content/plugins/ (used for the wp-env --env-cwd path).'
+        required: true
+        type: string
+      release-tag:
+        description: 'Tag name of the release to upload the schema to. Defaults to github.event.release.tag_name (the tag that triggered the caller release event).'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: write # required by softprops/action-gh-release to upload release assets.
+
+jobs:
+  upload_schema:
+    name: Upload schema artifact
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      WP_ENV_PHP_VERSION: ${{ inputs.php-version }}
+      RELEASE_TAG: ${{ inputs.release-tag != '' && inputs.release-tag || github.event.release.tag_name }}
+
+    steps:
+      - name: Assert a release tag is resolvable
+        run: |
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "::error::No release tag. Pass the 'release-tag' input when not running on a release event."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          show-progress: ${{ runner.debug == '1' && 'true' || 'false' }}
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2.37.2
+        with:
+          php-version: ${{ inputs.php-version }}
+          coverage: none
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Start the Docker testing environment
+        uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: npm run wp-env:test start
+
+      - name: Generate the static schema
+        run: |
+          mkdir -p tests/_output
+          npm run wp-env:test -- run cli --env-cwd=wp-content/plugins/${{ inputs.plugin-slug }} wp graphql generate-static-schema --output=tests/_output/schema.graphql
+          echo "Schema generated: $(wc -l < tests/_output/schema.graphql) lines"
+
+      - name: Upload schema as release asset
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          files: tests/_output/schema.graphql
