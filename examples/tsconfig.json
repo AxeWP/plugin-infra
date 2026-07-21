@@ -2,7 +2,7 @@
 	"$schema": "https://json.schemastore.org/tsconfig.json",
 
 	// Point this to your TS ruleset.
-	"extends": "@axewp/plugin-infra/tsconfig",
+	"extends": "@axepress/plugin-infra/tsconfig",
 
 	// Project-specific config.
 	"compilerOptions": {

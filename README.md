@@ -14,19 +14,19 @@ See [`.github/workflows/README.md`](.github/workflows/README.md) for full docume
 
 ### Shareable Configs
 
-Three configs carry enough shared rules to be worth versioning, so they are published to npm as `@axewp/plugin-infra`:
+Three configs carry enough shared rules to be worth versioning, so they are published to npm as `@axepress/plugin-infra`:
 
 ```bash
-npm install --save-dev @axewp/plugin-infra
+npm install --save-dev @axepress/plugin-infra
 ```
 
 Each config file documents its own usage. Open the one you want:
 
-| Tool          | Package                        | Config                                           | Example                                                    |
-| ------------- | ------------------------------ | ------------------------------------------------ | ---------------------------------------------------------- |
-| Prettier      | `@axewp/plugin-infra/prettier` | [`configs/prettier.mjs`](configs/prettier.mjs)   | [`examples/.prettierrc.mjs`](examples/.prettierrc.mjs)     |
-| TypeScript    | `@axewp/plugin-infra/tsconfig` | [`configs/tsconfig.json`](configs/tsconfig.json) | [`examples/tsconfig.json`](examples/tsconfig.json)         |
-| ESLint (flat) | `@axewp/plugin-infra/eslint`   | [`configs/eslint.mjs`](configs/eslint.mjs)       | [`examples/eslint.config.mjs`](examples/eslint.config.mjs) |
+| Tool          | Package                           | Config                                           | Example                                                    |
+| ------------- | --------------------------------- | ------------------------------------------------ | ---------------------------------------------------------- |
+| Prettier      | `@axepress/plugin-infra/prettier` | [`configs/prettier.mjs`](configs/prettier.mjs)   | [`examples/.prettierrc.mjs`](examples/.prettierrc.mjs)     |
+| TypeScript    | `@axepress/plugin-infra/tsconfig` | [`configs/tsconfig.json`](configs/tsconfig.json) | [`examples/tsconfig.json`](examples/tsconfig.json)         |
+| ESLint (flat) | `@axepress/plugin-infra/eslint`   | [`configs/eslint.mjs`](configs/eslint.mjs)       | [`examples/eslint.config.mjs`](examples/eslint.config.mjs) |
 
 ## Prior art
 

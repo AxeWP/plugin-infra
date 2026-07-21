@@ -2,7 +2,7 @@
  * Shared TypeScript base config for AxeWP plugins.
  *
  * `tsconfig.json` — set `paths`, `types`, `include` and `exclude` locally:
- *	{ "extends": "@axewp/plugin-infra/tsconfig" }
+ *	{ "extends": "@axepress/plugin-infra/tsconfig" }
  */
 {
 	"$schema": "https://json.schemastore.org/tsconfig.json",

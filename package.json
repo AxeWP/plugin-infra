@@ -1,5 +1,5 @@
 {
-	"name": "@axewp/plugin-infra",
+	"name": "@axepress/plugin-infra",
 	"version": "0.0.0",
 	"description": "Shareable base configs for AxeWP WordPress plugins.",
 	"license": "GPL-2.0-or-later",

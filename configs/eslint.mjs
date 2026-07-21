@@ -3,14 +3,14 @@
  *
  * `eslint.config.mjs`:
  *
- *     export { default } from '@axewp/plugin-infra/eslint';
+ *     export { default } from '@axepress/plugin-infra/eslint';
  *
  * Flat config is additive, so customize by appending your own objects —
  * including `ignores`. Set your text domain here; `@wordpress/i18n-text-domain`
  * comes from `@wordpress/eslint-plugin`'s recommended config and defaults to
  * `default`:
  *
- *     import base from '@axewp/plugin-infra/eslint';
+ *     import base from '@axepress/plugin-infra/eslint';
  *
  *     export default [
  *         ...base,

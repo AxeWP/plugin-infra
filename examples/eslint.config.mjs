@@ -1,6 +1,6 @@
 // Copy to your plugin root as `eslint.config.mjs` and replace
 // `your-plugin-name` with your plugin's text domain.
-import base from '@axewp/plugin-infra/eslint';
+import base from '@axepress/plugin-infra/eslint';
 
 export default [
 	...base,

@@ -3,7 +3,7 @@
  *
  * `.prettierrc.mjs`:
  *
- *     export { default } from '@axewp/plugin-infra/prettier';
+ *     export { default } from '@axepress/plugin-infra/prettier';
  *
  * @see https://prettier.io/docs/configuration
  */
