@@ -152,12 +152,12 @@ export default [
 	},
 
 	{
+		...jest.configs[ 'flat/recommended' ],
 		files: [
 			'**/__tests__/**/*.{ts,tsx}',
 			'**/*.{test,spec}.{ts,tsx}',
 			'tests/js/**/*.{ts,tsx}',
 		],
-		...jest.configs[ 'flat/recommended' ],
 		rules: {
 			...jest.configs[ 'flat/recommended' ].rules,
 			'jest/expect-expect': 'error',
