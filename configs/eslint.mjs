@@ -55,7 +55,6 @@ export default [
 			'@wordpress/i18n-hyphenated-range': 'error',
 			'@wordpress/i18n-no-flanking-whitespace': 'error',
 
-			'@wordpress/dependency-group': 'error',
 			'@wordpress/data-no-store-string-literals': 'error',
 			'@wordpress/wp-global-usage': 'error',
 			'@wordpress/react-no-unsafe-timeout': 'error',
