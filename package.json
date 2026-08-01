@@ -63,9 +63,9 @@
 	"devDependencies": {
 		"@wordpress/eslint-plugin": "^25.7.0",
 		"@wordpress/prettier-config": "^4.51.0",
-		"eslint-plugin-jest": "^29.15.5",
+		"eslint-plugin-jest": "^29.16.0",
 		"lefthook": "^2.1.10",
-		"lint-staged": "^17.1.0",
+		"lint-staged": "^17.2.0",
 		"prettier": "npm:wp-prettier@^3",
 		"string-argv": "^0.3.2"
 	},
