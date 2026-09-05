@@ -61,11 +61,11 @@
 		}
 	},
 	"devDependencies": {
-		"@wordpress/eslint-plugin": "^25.9.0",
+		"@wordpress/eslint-plugin": "^25.10.0",
 		"@wordpress/prettier-config": "^4.51.0",
-		"eslint-plugin-jest": "^29.16.1",
-		"lefthook": "^2.1.10",
-		"lint-staged": "^17.3.0",
+		"eslint-plugin-jest": "^29.16.5",
+		"lefthook": "^2.1.12",
+		"lint-staged": "^17.4.1",
 		"prettier": "npm:wp-prettier@^3",
 		"string-argv": "^0.3.2"
 	},
