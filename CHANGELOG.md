@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/AxeWP/plugin-infra/compare/v0.2.0...v0.2.1) (2026-09-19)
+
+
+### Bug Fixes
+
+* **deps:** bump softprops/action-gh-release in the github-actions group ([#25](https://github.com/AxeWP/plugin-infra/issues/25)) ([1e91277](https://github.com/AxeWP/plugin-infra/commit/1e91277173213d7ff653c701d5b9844bd4169b1d))
+
 ## [0.2.0](https://github.com/AxeWP/plugin-infra/compare/v0.1.0...v0.2.0) (2026-08-09)
 
 
