@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/AxeWP/plugin-infra/compare/v0.2.0...v0.2.1) (2026-09-27)
+
+
+### Bug Fixes
+
+* **deps:** bump codecov/codecov-action in the github-actions group ([#31](https://github.com/AxeWP/plugin-infra/issues/31)) ([4863eda](https://github.com/AxeWP/plugin-infra/commit/4863edaf5d595f9c27120d2e95ee8b1c3bf0b3f0))
+* **deps:** bump softprops/action-gh-release in the github-actions group ([#25](https://github.com/AxeWP/plugin-infra/issues/25)) ([1e91277](https://github.com/AxeWP/plugin-infra/commit/1e91277173213d7ff653c701d5b9844bd4169b1d))
+
 ## [0.2.0](https://github.com/AxeWP/plugin-infra/compare/v0.1.0...v0.2.0) (2026-08-09)
 
 
