@@ -69,6 +69,10 @@
 		"prettier": "npm:wp-prettier@^3",
 		"string-argv": "^0.3.2"
 	},
+	"overrides": {
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1"
+	},
 	"allowScripts": {
 		"lefthook@2.1.14": true,
 		"unrs-resolver@1.12.2": true
