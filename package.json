@@ -61,17 +61,16 @@
 		}
 	},
 	"devDependencies": {
-		"@wordpress/eslint-plugin": "^25.10.0",
-		"@wordpress/prettier-config": "^4.55.0",
+		"@wordpress/eslint-plugin": "^27.0.0",
+		"@wordpress/prettier-config": "^4.56.0",
 		"eslint-plugin-jest": "^29.16.6",
 		"lefthook": "^2.1.14",
-		"lint-staged": "^17.5.1",
+		"lint-staged": "^17.6.0",
 		"prettier": "npm:wp-prettier@^3",
 		"string-argv": "^0.3.2"
 	},
 	"allowScripts": {
-		"lefthook@2.1.10": true,
-		"core-js@3.49.0": true,
+		"lefthook@2.1.14": true,
 		"unrs-resolver@1.12.2": true
 	}
 }
