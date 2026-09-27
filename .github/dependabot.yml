@@ -6,7 +6,7 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     commit-message:
-      prefix: 'fix'
+      prefix: 'feat'
       include: 'scope'
     labels:
       - Dependencies
