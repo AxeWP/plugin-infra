@@ -13,7 +13,7 @@ The following reusable workflows are available for consumption by downstream plu
 | [reusable-phpstan.yml](reusable-phpstan.yml)                               | Run PHPStan static analysis                  | `php-version`                                                                              |
 | [reusable-phpcs.yml](reusable-phpcs.yml)                                   | Run PHPCS coding standards                   | `php-version`                                                                              |
 | [reusable-e2e.yml](reusable-e2e.yml)                                       | Run Playwright E2E tests                     | `php-version`                                                                              |
-| [reusable-jest.yml](reusable-jest.yml)                                     | Run Jest unit tests                          | `coverage`                                                                                 |
+| [reusable-js-test.yml](reusable-js-test.yml)                               | Run JS unit tests (`npm run test:js`)        | `coverage`                                                                                 |
 | [reusable-js-lints.yml](reusable-js-lints.yml)                             | Run ESLint, Stylelint, Prettier, TSC         | `eslint`, `stylelint`, `prettier`, `tsc`                                                   |
 | [reusable-build.yml](reusable-build.yml)                                   | Build plugin artifact                        | `php-version`, `artifact-name`, `artifact-path`                                            |
 | [reusable-graphql-schema-linter.yml](reusable-graphql-schema-linter.yml)   | Lint WPGraphQL schema + breaking-change diff | `php-version`, `plugin-slug`, `previous-schema-url`                                        |
@@ -83,9 +83,9 @@ Runs Playwright E2E tests.
 - **Inputs:**
   - `php-version` (string, required): PHP version to use.
 
-### reusable-jest.yml
+### reusable-js-test.yml
 
-Runs Jest unit tests for JavaScript.
+Runs JavaScript unit tests via `npm run test:js` (or `test:js:coverage`). Runner-agnostic: use whatever your project wires up (e.g. `wp-scripts test-unit-js`).
 
 - **Inputs:**
   - `coverage` (boolean, default: `true`): Enable code coverage.
@@ -178,7 +178,7 @@ The following workflows are used internally by this repository and are not desig
 
 | Workflow                                           | Trigger                                                   | Purpose                                           |
 | -------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------- |
-| [ci.yml](ci.yml)                                   | Push to `main`, PRs to `main`/`release/**`                | Lint `composer.json`, check Prettier formatting   |
+| [ci.yml](ci.yml)                                   | Push to `main`, PRs to `main`/`release/**`                | Lint `composer.json`, check Prettier, run ESLint  |
 | [release.yml](release.yml)                         | Push to `main`, `workflow_dispatch`                       | Automated releases via `release-please`           |
 | [pr-title.yml](pr-title.yml)                       | PR events (open, sync, edit, reopen, ready)               | Validate PR titles follow Conventional Commits    |
 | [copilot-setup-steps.yml](copilot-setup-steps.yml) | Push/PR to `copilot-setup-steps.yml`, `workflow_dispatch` | Configure GitHub Copilot coding agent environment |
@@ -187,10 +187,10 @@ The following workflows are used internally by this repository and are not desig
 
 ## Secrets
 
-| Secret          | Required By                                                 | Notes                                                 |
-| --------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
-| `CODECOV_TOKEN` | `reusable-phpunit`, `reusable-jest`, `reusable-codeception` | Optional — coverage uploads fail silently if missing. |
-| `GITHUB_TOKEN`  | `pr-title.yml`                                              | Automatically provided by GitHub.                     |
+| Secret          | Required By                                                    | Notes                                                 |
+| --------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
+| `CODECOV_TOKEN` | `reusable-phpunit`, `reusable-js-test`, `reusable-codeception` | Optional — coverage uploads fail silently if missing. |
+| `GITHUB_TOKEN`  | `pr-title.yml`                                                 | Automatically provided by GitHub.                     |
 
 ## Usage Example
 
