@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/AxeWP/plugin-infra/compare/v0.2.1...v0.3.0) (2026-09-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* update config for vitest and add package linters ([#35](https://github.com/AxeWP/plugin-infra/issues/35))
+
+### Features
+
+* update config for vitest and add package linters ([#35](https://github.com/AxeWP/plugin-infra/issues/35)) ([9f29900](https://github.com/AxeWP/plugin-infra/commit/9f299001c107c33dff6f96c7a1a144eae607aa1f))
+
 ## [0.2.1](https://github.com/AxeWP/plugin-infra/compare/v0.2.0...v0.2.1) (2026-09-27)
 
 
