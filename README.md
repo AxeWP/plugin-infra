@@ -8,7 +8,7 @@
 
 ### Reusable GitHub Actions Workflows
 
-Reusable workflows under `.github/workflows/` for PHPUnit, Codeception, PHPStan, PHPCS, E2E (Playwright), Jest, CSS/JS linting, plugin builds, workflow linting, and GraphQL schema linting.
+Reusable workflows under `.github/workflows/` for PHPUnit, Codeception, PHPStan, PHPCS, E2E (Playwright), JS unit tests, CSS/JS linting, plugin builds, workflow linting, and GraphQL schema linting.
 
 See [`.github/workflows/README.md`](.github/workflows/README.md) for full documentation, inputs, and copy-paste usage examples.
 

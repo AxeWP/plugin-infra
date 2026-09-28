@@ -2,5 +2,6 @@
  * @type {import('lint-staged').Configuration}
  */
 export default {
-	'**/*.{json,md,css,scss,js,jsx,ts,tsx}': [ 'prettier --write' ],
+	'**/*.{md,css,scss,*js,jsx,ts,tsx}': [ 'prettier --write' ],
+	'**/*.{json,*js,jsx,ts,tsx}': [ 'eslint --fix --no-warn-ignored' ],
 };

@@ -29,7 +29,6 @@
  */
 
 import wordpress from '@wordpress/eslint-plugin';
-import jest from 'eslint-plugin-jest';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -77,9 +76,11 @@ export default [
 				{
 					devDependencies: [
 						'**/*.@(spec|test).@(j|t)s?(x)',
-						'**/@(webpack|jest|babel|playwright).config.@(j|t)s',
+						'**/@(webpack|babel|playwright|vite|vitest).config.@(j|t)s',
+						'**/vitest.setup.@(j|t)s',
 						'**/scripts/**',
 						'**/tests/**',
+						'**/__tests__/**',
 					],
 				},
 			],
@@ -150,24 +151,20 @@ export default [
 		},
 	},
 
-	{
-		...jest.configs[ 'flat/recommended' ],
+	// Vitest unit tests, scoped like `wp-scripts lint-js`.
+	...wordpress.configs[ 'test-unit' ].map( ( config ) => ( {
+		...config,
 		files: [
-			'**/__tests__/**/*.{ts,tsx}',
-			'**/*.{test,spec}.{ts,tsx}',
+			'**/@(test|__tests__)/**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}',
+			'**/*.@(test|spec).{js,jsx,ts,tsx,mjs,cjs,mts,cts}',
 			'tests/js/**/*.{ts,tsx}',
 		],
 		rules: {
-			...jest.configs[ 'flat/recommended' ].rules,
-			'jest/expect-expect': 'error',
-			'jest/no-commented-out-tests': 'warn',
-			'jest/no-disabled-tests': 'warn',
-			'jest/no-focused-tests': 'error',
-			'jest/no-identical-title': 'error',
-			'jest/prefer-to-have-length': 'warn',
-			'jest/valid-expect': 'error',
+			...config.rules,
+			'vitest/no-commented-out-tests': 'warn',
+			'vitest/prefer-to-have-length': 'warn',
 		},
-	},
+	} ) ),
 
 	{
 		files: [ 'tests/e2e/**/*.{ts,tsx}' ],
