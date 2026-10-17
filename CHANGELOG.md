@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/AxeWP/plugin-infra/compare/v0.3.0...v0.4.0) (2026-10-17)
+
+
+### Features
+
+* **deps:** bump the github-actions group with 3 updates ([#40](https://github.com/AxeWP/plugin-infra/issues/40)) ([54a3041](https://github.com/AxeWP/plugin-infra/commit/54a30415185fd37bca893d38eda334e9041845fd))
+
 ## [0.3.0](https://github.com/AxeWP/plugin-infra/compare/v0.2.1...v0.3.0) (2026-09-28)
 
 
