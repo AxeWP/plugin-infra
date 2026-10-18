@@ -1,0 +1,34 @@
+name: PR Cleanup
+
+# Deletes a closed PR's WordPress Playground preview zips from the `ci-artifacts` release.
+# Call it from a `pull_request_target` (closed) trigger, so fork PRs get a token that can delete, and never check out or run PR code here.
+on:
+  workflow_call:
+    inputs:
+      pr-number:
+        description: 'Number of the closed pull request'
+        required: true
+        type: number
+
+permissions: {}
+
+jobs:
+  cleanup:
+    name: Delete Playground Preview Zips
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+
+    steps:
+      - name: Delete Playground preview zips
+        run: |
+          if ! gh release view ci-artifacts > /dev/null 2>&1; then
+            exit 0
+          fi
+          gh release view ci-artifacts --json assets --jq ".assets[].name | select(startswith(\"pr-${PR_NUMBER}-\"))" \
+            | while read -r asset; do gh release delete-asset ci-artifacts "$asset" --yes; done
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr-number }}

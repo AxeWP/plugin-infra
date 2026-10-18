@@ -46,24 +46,25 @@ jobs:
           cache: 'npm'
 
       - name: Install npm dependencies
+        id: npm-ci
         run: npm ci
 
       - name: Run ESLint
         id: eslint
-        if: ${{ inputs.eslint }}
+        if: ${{ inputs.eslint && !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run lint:js
 
       - name: Run TypeScript check
         id: typescript
-        if: ${{ inputs.tsc && !cancelled() }}
+        if: ${{ inputs.tsc && !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run lint:js:types
 
       - name: Run Stylelint
         id: stylelint
-        if: ${{ inputs.stylelint && !cancelled() }}
+        if: ${{ inputs.stylelint && !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run lint:css
 
       - name: Run Prettier check
         id: prettier
-        if: ${{ inputs.prettier && !cancelled() }}
+        if: ${{ inputs.prettier && !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: npm run format -- --check

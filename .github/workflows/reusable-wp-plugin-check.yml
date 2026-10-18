@@ -1,0 +1,100 @@
+name: Run Plugin Check
+
+# Runs WordPress Plugin Check against the plugin zip built by `reusable-build.yml` earlier in the same workflow run,
+# so only the files that ship are checked.
+on:
+  workflow_call:
+    inputs:
+      plugin-slug:
+        description: 'The `plugin-slug` passed to reusable-build.yml'
+        required: true
+        type: string
+      wp-version:
+        description: 'WordPress version (`latest` or `trunk`)'
+        required: false
+        type: string
+        default: 'latest'
+      checks:
+        description: 'Only run these checks (newline-separated). Empty runs all checks.'
+        required: false
+        type: string
+        default: ''
+      exclude-checks:
+        description: 'Checks to exclude (newline-separated)'
+        required: false
+        type: string
+        default: ''
+      categories:
+        description: 'Limit checks to these categories (newline-separated)'
+        required: false
+        type: string
+        default: ''
+      exclude-files:
+        description: 'Files to exclude, relative to the plugin root (newline-separated)'
+        required: false
+        type: string
+        default: ''
+      exclude-directories:
+        description: 'Directories to exclude, relative to the plugin root (newline-separated)'
+        required: false
+        type: string
+        default: ''
+      ignore-codes:
+        description: 'Error codes to ignore (newline-separated)'
+        required: false
+        type: string
+        default: ''
+      ignore-warnings:
+        description: 'Ignore warnings'
+        required: false
+        type: boolean
+        default: false
+      include-experimental:
+        description: 'Include experimental checks'
+        required: false
+        type: boolean
+        default: false
+      strict:
+        description: 'Treat warnings as errors'
+        required: false
+        type: boolean
+        default: false
+
+permissions: {}
+
+jobs:
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      # Plugin Check posts its results as a PR comment. On fork PRs the token is read-only, so it only annotates.
+      pull-requests: write
+
+    steps:
+      - name: Download plugin zip artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: plugin-zip-${{ inputs.plugin-slug }}
+          path: ${{ runner.temp }}/plugin-zip
+
+      - name: Extract plugin zip
+        run: unzip -q "${RUNNER_TEMP}/plugin-zip/${PLUGIN_SLUG}.zip" -d build
+        env:
+          PLUGIN_SLUG: ${{ inputs.plugin-slug }}
+
+      - name: Run Plugin Check
+        uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          build-dir: build/${{ inputs.plugin-slug }}
+          wp-version: ${{ inputs.wp-version }}
+          checks: ${{ inputs.checks }}
+          exclude-checks: ${{ inputs.exclude-checks }}
+          categories: ${{ inputs.categories }}
+          exclude-files: ${{ inputs.exclude-files }}
+          exclude-directories: ${{ inputs.exclude-directories }}
+          ignore-codes: ${{ inputs.ignore-codes }}
+          ignore-warnings: ${{ inputs.ignore-warnings }}
+          include-experimental: ${{ inputs.include-experimental }}
+          strict: ${{ inputs.strict }}
+          slug: ${{ inputs.plugin-slug }}
