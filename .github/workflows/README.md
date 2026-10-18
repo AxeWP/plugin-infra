@@ -135,6 +135,7 @@ Runs [WordPress Plugin Check](https://github.com/WordPress/plugin-check-action) 
   - `checks`, `exclude-checks`, `categories`, `exclude-files`, `exclude-directories`, `ignore-codes` (string, default: `''`): Newline-separated lists passed to Plugin Check.
   - `ignore-warnings`, `include-experimental`, `strict` (boolean, default: `false`): Passed to Plugin Check.
 - **Permissions:** The caller must grant `pull-requests: write` so Plugin Check can comment on the PR.
+- **Multiple plugins:** Plugin Check keeps one comment per PR, so with several plugins it shows only the last report. Each plugin's findings stay in its job's annotations and `plugin-check-results-<plugin-slug>` artifact.
 
 **Example Usage:**
 
@@ -264,6 +265,7 @@ Generates a static GraphQL schema via `wp-env` and uploads it as a GitHub releas
   - `release-tag` (string, default: `''`): Release tag to upload to. Defaults to `github.event.release.tag_name`. Pass an explicit tag for `workflow_dispatch` runs.
 - **Permissions:** The caller must grant `contents: write` — a reusable workflow can only narrow the caller's token, never widen it.
 - **Consumer requirements:** A `.wp-env.test.json` and `wp-env:test` npm script, with WPGraphQL installed as a `wp-env` plugin.
+- **Multiple plugins:** Give each plugin its own release tag. Every plugin's asset is named `schema.graphql`, so plugins sharing a release overwrite each other's.
 
 **Example Usage:**
 

@@ -14,21 +14,17 @@ on:
 permissions: {}
 
 jobs:
-  preview:
-    name: Playground Preview
+  # Kept outside the concurrency group, so a stale CI run can't cancel the current preview.
+  resolve:
+    name: Resolve Pull Request
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
       actions: read
-      contents: write
-      pull-requests: write
-    # A newer CI run for the same branch supersedes this one.
-    concurrency:
-      group: wp-playground-preview-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
-      cancel-in-progress: true
-    env:
-      GH_REPO: ${{ github.repository }}
-      GH_TOKEN: ${{ github.token }}
+      pull-requests: read
+    outputs:
+      number: ${{ steps.pr.outputs.number }}
+      sha: ${{ steps.pr.outputs.sha }}
 
     steps:
       - name: Resolve the pull request
@@ -73,9 +69,28 @@ jobs:
             core.setOutput('number', String(matches[0].number));
             core.setOutput('sha', run.head_sha);
 
+  preview:
+    name: Playground Preview
+    needs: resolve
+    if: needs.resolve.outputs.number
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    # A newer CI run for the same PR supersedes this one.
+    concurrency:
+      group: wp-playground-preview-pr-${{ needs.resolve.outputs.number }}
+      cancel-in-progress: true
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
       # In a `workflow_run`, this checks out the caller's default branch, never the PR code.
       - name: Checkout Blueprint
-        if: steps.pr.outputs.number && inputs.blueprint-path != ''
+        if: inputs.blueprint-path != ''
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: ${{ inputs.blueprint-path }}
@@ -86,16 +101,22 @@ jobs:
       # Replaces the PR's previous zips with `pr-<number>-<sha>-<slug>.zip`.
       - name: Upload the zips to the ci-artifacts release
         id: upload
-        if: steps.pr.outputs.number
         working-directory: ${{ runner.temp }}
         run: |
+          delete_pr_assets() {
+            gh release view ci-artifacts --json assets --jq ".assets[].name | select(startswith(\"pr-${PR_NUMBER}-\"))" \
+              | while read -r old; do gh release delete-asset ci-artifacts "$old" --yes; done
+          }
+
           gh run download "$RUN_ID" --pattern 'plugin-zip-*' --dir artifacts
 
           # A prerelease, not a draft: Playground can't download draft assets.
-          gh release view ci-artifacts > /dev/null 2>&1 || gh release create ci-artifacts --prerelease --notes 'WordPress Playground PR previews.'
+          # Another PR's preview may win the race to create it.
+          gh release view ci-artifacts > /dev/null 2>&1 \
+            || gh release create ci-artifacts --prerelease --notes 'WordPress Playground PR previews.' \
+            || gh release view ci-artifacts > /dev/null
 
-          gh release view ci-artifacts --json assets --jq ".assets[].name | select(startswith(\"pr-${PR_NUMBER}-\"))" \
-            | while read -r old; do gh release delete-asset ci-artifacts "$old" --yes; done
+          delete_pr_assets
 
           urls='{}'
           for dir in artifacts/plugin-zip-*; do
@@ -111,10 +132,17 @@ jobs:
             urls=$(jq -c --arg slug "$slug" --arg url "https://github.com/${GH_REPO}/releases/download/ci-artifacts/${asset}" '.[$slug] = $url' <<< "$urls")
           done
 
+          # The PR may have closed, and been cleaned up, mid-upload. Cleanup may still be deleting too, hence `|| true`.
+          if [ "$(gh pr view "$PR_NUMBER" --json state --jq .state)" != 'OPEN' ]; then
+            delete_pr_assets || true
+            echo "::notice::Skipping: PR #${PR_NUMBER} closed during the upload."
+            exit 0
+          fi
+
           echo "urls=$urls" >> "$GITHUB_OUTPUT"
         env:
-          COMMIT_SHA: ${{ steps.pr.outputs.sha }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          COMMIT_SHA: ${{ needs.resolve.outputs.sha }}
+          PR_NUMBER: ${{ needs.resolve.outputs.number }}
           RUN_ID: ${{ github.event.workflow_run.id }}
 
       - name: Render the Blueprint
@@ -140,5 +168,5 @@ jobs:
         uses: WordPress/action-wp-playground-pr-preview@1b15093d61b5e98cdfeb31466f34ade495762cd7 # v4.0.0
         with:
           blueprint: ${{ steps.blueprint.outputs.blueprint }}
-          pr-number: ${{ steps.pr.outputs.number }}
+          pr-number: ${{ needs.resolve.outputs.number }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
