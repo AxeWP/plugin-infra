@@ -1,0 +1,144 @@
+name: WordPress Playground PR Preview
+
+# Publishes a CI run's `plugin-zip-*` artifacts to the `ci-artifacts` prerelease and posts a Playground preview button.
+# Call it from a `workflow_run` trigger, and never check out or run PR code here.
+on:
+  workflow_call:
+    inputs:
+      blueprint-path:
+        description: "Path to a Blueprint on the default branch. `{{ARTIFACT_URL:<slug>}}` is replaced with the URL of that plugin's PR build. Empty installs and activates the built plugins."
+        required: false
+        type: string
+        default: ''
+
+permissions: {}
+
+jobs:
+  preview:
+    name: Playground Preview
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    # A newer CI run for the same branch supersedes this one.
+    concurrency:
+      group: wp-playground-preview-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+      cancel-in-progress: true
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Resolve the pull request
+        id: pr
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            if (run.event !== 'pull_request' || run.conclusion !== 'success') {
+              core.notice(`Skipping: the CI run was a ${run.event} event that concluded ${run.conclusion}.`);
+              return;
+            }
+
+            // `run.pull_requests` is empty for fork PRs, so match the open PR by head repository, branch, and SHA.
+            const { owner, repo } = context.repo;
+            const pulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: 'open',
+              head: `${run.head_repository.owner.login}:${run.head_branch}`,
+              per_page: 100,
+            });
+            const matches = pulls.filter(
+              (p) => p.head.sha === run.head_sha && p.head.repo?.full_name === run.head_repository.full_name
+            );
+            if (matches.length !== 1) {
+              core.notice(`Skipping: ${matches.length} open PRs are at ${run.head_sha}.`);
+              return;
+            }
+
+            const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+              owner,
+              repo,
+              run_id: run.id,
+              per_page: 100,
+            });
+            if (!artifacts.some((a) => !a.expired && a.name.startsWith('plugin-zip-'))) {
+              core.notice('Skipping: the CI run has no plugin-zip-* artifacts.');
+              return;
+            }
+
+            core.setOutput('number', String(matches[0].number));
+            core.setOutput('sha', run.head_sha);
+
+      # In a `workflow_run`, this checks out the caller's default branch, never the PR code.
+      - name: Checkout Blueprint
+        if: steps.pr.outputs.number && inputs.blueprint-path != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: ${{ inputs.blueprint-path }}
+          sparse-checkout-cone-mode: false
+          show-progress: ${{ runner.debug == '1' && 'true' || 'false' }}
+          persist-credentials: false
+
+      # Replaces the PR's previous zips with `pr-<number>-<sha>-<slug>.zip`.
+      - name: Upload the zips to the ci-artifacts release
+        id: upload
+        if: steps.pr.outputs.number
+        working-directory: ${{ runner.temp }}
+        run: |
+          gh run download "$RUN_ID" --pattern 'plugin-zip-*' --dir artifacts
+
+          # A prerelease, not a draft: Playground can't download draft assets.
+          gh release view ci-artifacts > /dev/null 2>&1 || gh release create ci-artifacts --prerelease --notes 'WordPress Playground PR previews.'
+
+          gh release view ci-artifacts --json assets --jq ".assets[].name | select(startswith(\"pr-${PR_NUMBER}-\"))" \
+            | while read -r old; do gh release delete-asset ci-artifacts "$old" --yes; done
+
+          urls='{}'
+          for dir in artifacts/plugin-zip-*; do
+            slug="${dir#artifacts/plugin-zip-}"
+            # Built from PR code, so check the slug and file before using them.
+            if [[ ! "$slug" =~ ^[a-z0-9_-]+$ ]] || [ ! -f "${dir}/${slug}.zip" ] || [ -L "${dir}/${slug}.zip" ]; then
+              echo "::error::Each plugin-zip-<slug> artifact must hold <slug>.zip."
+              exit 1
+            fi
+            asset="pr-${PR_NUMBER}-${COMMIT_SHA}-${slug}.zip"
+            mv "${dir}/${slug}.zip" "$asset"
+            gh release upload ci-artifacts "$asset"
+            urls=$(jq -c --arg slug "$slug" --arg url "https://github.com/${GH_REPO}/releases/download/ci-artifacts/${asset}" '.[$slug] = $url' <<< "$urls")
+          done
+
+          echo "urls=$urls" >> "$GITHUB_OUTPUT"
+        env:
+          COMMIT_SHA: ${{ steps.pr.outputs.sha }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+
+      - name: Render the Blueprint
+        id: blueprint
+        if: steps.upload.outputs.urls
+        run: |
+          # Without a Blueprint, `input` has nothing to read.
+          BLUEPRINT=$(jq -nc --argjson urls "$URLS" '
+            (try input catch null) as $blueprint
+            | if $blueprint == null then
+                { login: true, landingPage: "/wp-admin/plugins.php", steps: [ $urls[] | { step: "installPlugin", pluginData: { resource: "url", url: . }, options: { activate: true } } ] }
+              else
+                $blueprint | walk(if type == "string" then gsub("\\{\\{ARTIFACT_URL:(?<slug>[a-z0-9_-]+)\\}\\}"; $urls[.slug] // "") else . end)
+              end
+          ' "${BLUEPRINT_PATH:-/dev/null}")
+          echo "blueprint=$BLUEPRINT" >> "$GITHUB_OUTPUT"
+        env:
+          BLUEPRINT_PATH: ${{ inputs.blueprint-path }}
+          URLS: ${{ steps.upload.outputs.urls }}
+
+      - name: Post the Preview button
+        if: steps.blueprint.outputs.blueprint
+        uses: WordPress/action-wp-playground-pr-preview@1b15093d61b5e98cdfeb31466f34ade495762cd7 # v4.0.0
+        with:
+          blueprint: ${{ steps.blueprint.outputs.blueprint }}
+          pr-number: ${{ steps.pr.outputs.number }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

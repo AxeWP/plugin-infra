@@ -37,6 +37,16 @@ on:
         required: false
         type: boolean
         default: true
+      working-directory:
+        description: 'Plugin directory, relative to the repository root.'
+        required: false
+        type: string
+        default: '.'
+      plugin-slug:
+        description: 'Appended to artifact names, so they are unique when called once per plugin.'
+        required: false
+        type: string
+        default: ''
 
     secrets:
       CODECOV_TOKEN:
@@ -49,6 +59,9 @@ jobs:
     name: Codeception (PHP ${{ inputs.php-version }}, WP ${{ inputs.wp-version }})${{ inputs.coverage && ' (coverage)' || '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
     env:
       WP_ENV_PHP_VERSION: ${{ inputs.php-version }}
       WP_ENV_CORE: ${{ inputs.wp-version == 'trunk' && 'WordPress/WordPress' || inputs.wp-version == 'latest' && 'latest' || format('https://wordpress.org/wordpress-{0}.zip', inputs.wp-version) }}
@@ -69,6 +82,8 @@ jobs:
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
+        with:
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -77,6 +92,7 @@ jobs:
           cache: 'npm'
 
       - name: Install npm dependencies
+        working-directory: .
         run: npm ci
 
       - name: Create cache directories
@@ -92,11 +108,13 @@ jobs:
 
       - name: Start the Docker testing environment
         uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
+        env:
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
         with:
           timeout_minutes: 10
           max_attempts: 3
           command: |
-            ${{ inputs.coverage && 'PCOV_ENABLED=1 ' || '' }}npm run wp-env:test start --${{ inputs.multisite && ' --multisite' || '' }}${{ secrets.ACTIONS_STEP_DEBUG && ' --debug' || '' }}
+            cd "$WORKING_DIRECTORY" && ${{ inputs.coverage && 'PCOV_ENABLED=1 ' || '' }}npm run wp-env:test start --${{ inputs.multisite && ' --multisite' || '' }}${{ secrets.ACTIONS_STEP_DEBUG && ' --debug' || '' }}
 
       - name: Log versions
         run: |
@@ -119,16 +137,16 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: test-failures-php${{ inputs.php-version }}-wp${{ inputs.wp-version }}
-          path: tests/_output/*.fail.html
+          name: test-failures-php${{ inputs.php-version }}-wp${{ inputs.wp-version }}${{ inputs.plugin-slug && format('-{0}', inputs.plugin-slug) || '' }}
+          path: ${{ inputs.working-directory }}/tests/_output/*.fail.html
           if-no-files-found: ignore
 
       - name: Upload HTML coverage report as artifact
         if: ${{ inputs.coverage }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: wp-code-coverage-${{ inputs.php-version }}-${{ inputs.wp-version }}
-          path: tests/_output/coverage
+          name: wp-code-coverage-${{ inputs.php-version }}-${{ inputs.wp-version }}${{ inputs.plugin-slug && format('-{0}', inputs.plugin-slug) || '' }}
+          path: ${{ inputs.working-directory }}/tests/_output/coverage
           overwrite: true
           if-no-files-found: ignore
 
@@ -138,6 +156,6 @@ jobs:
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: tests/_output/coverage.xml
+          files: ${{ inputs.working-directory }}/tests/_output/coverage.xml
           flags: wpunit
           fail_ci_if_error: true

@@ -7,6 +7,11 @@ on:
         description: 'PHP version to use'
         required: true
         type: string
+      working-directory:
+        description: 'Plugin directory, relative to the repository root.'
+        required: false
+        type: string
+        default: '.'
       plugin-slug:
         description: 'Directory name of the plugin inside wp-content/plugins/ (used for the wp-env --env-cwd path).'
         required: true
@@ -25,12 +30,16 @@ jobs:
     name: Upload schema artifact
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
     env:
       WP_ENV_PHP_VERSION: ${{ inputs.php-version }}
       RELEASE_TAG: ${{ inputs.release-tag != '' && inputs.release-tag || github.event.release.tag_name }}
 
     steps:
       - name: Assert a release tag is resolvable
+        working-directory: .
         run: |
           if [ -z "$RELEASE_TAG" ]; then
             echo "::error::No release tag. Pass the 'release-tag' input when not running on a release event."
@@ -51,6 +60,8 @@ jobs:
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
+        with:
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -59,14 +70,17 @@ jobs:
           cache: 'npm'
 
       - name: Install npm dependencies
+        working-directory: .
         run: npm ci
 
       - name: Start the Docker testing environment
         uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
+        env:
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: npm run wp-env:test start
+          command: cd "$WORKING_DIRECTORY" && npm run wp-env:test start
 
       - name: Generate the static schema
         run: |
@@ -78,4 +92,4 @@ jobs:
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          files: tests/_output/schema.graphql
+          files: ${{ inputs.working-directory }}/tests/_output/schema.graphql

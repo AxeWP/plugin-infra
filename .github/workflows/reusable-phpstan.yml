@@ -7,6 +7,11 @@ on:
         description: 'PHP version to use'
         required: true
         type: string
+      working-directory:
+        description: 'Plugin directory, relative to the repository root.'
+        required: false
+        type: string
+        default: '.'
 
 permissions: {}
 
@@ -15,6 +20,9 @@ jobs:
     name: PHPStan Static Analysis
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
 
     steps:
       - name: Checkout repository
@@ -30,27 +38,26 @@ jobs:
           coverage: none
           tools: cs2pr
 
-      # This date is used to ensure that the PHPStan cache is cleared at least once every week.
-      - name: "Get last Monday's date"
-        id: get-date
-        run: echo "date=$(/bin/date -u --date='last Mon' "+%F")" >> "$GITHUB_OUTPUT"
-
-      - name: Cache PHPStan scan cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Restore PHPStan result cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: tests/_output
-          key: phpstan-result-cache-${{ runner.os }}-date-${{ steps.get-date.outputs.date }}
+          path: ${{ inputs.working-directory }}/tests/_output
+          key: phpstan-result-cache-${{ runner.os }}-${{ inputs.working-directory }}-php${{ inputs.php-version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            phpstan-result-cache-${{ runner.os }}-${{ inputs.working-directory }}-php${{ inputs.php-version }}-
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
+        with:
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Run PHPStan
         id: phpstan
         run: composer run-script phpstan -- --memory-limit=1G --error-format=checkstyle | cs2pr
 
-      - name: Save result cache
+      - name: Save PHPStan result cache
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.phpstan.outcome != 'skipped' }}
         with:
-          path: tests/_output
-          key: phpstan-result-cache-${{ runner.os }}-date-${{ steps.get-date.outputs.date }}
+          path: ${{ inputs.working-directory }}/tests/_output
+          key: phpstan-result-cache-${{ runner.os }}-${{ inputs.working-directory }}-php${{ inputs.php-version }}-${{ github.run_id }}-${{ github.run_attempt }}

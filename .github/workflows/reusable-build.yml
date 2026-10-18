@@ -6,14 +6,15 @@ on:
         required: true
         type: string
         description: 'The PHP version to use for the build.'
-      artifact-name:
+      plugin-slug:
         required: true
         type: string
-        description: 'The name of the artifact to upload'
-      artifact-path:
-        required: true
+        description: 'Plugin slug. `npm run plugin-zip` must create `<plugin-slug>.zip` in working-directory.'
+      working-directory:
+        required: false
         type: string
-        description: 'The path of the artifact to upload'
+        default: '.'
+        description: 'Plugin directory, relative to the repository root.'
 
 permissions: {}
 
@@ -21,6 +22,9 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -38,6 +42,7 @@ jobs:
       - name: Install Composer dependencies
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
         with:
+          working-directory: ${{ inputs.working-directory }}
           composer-options: '--no-dev --optimize-autoloader'
 
       - name: Setup Node.js
@@ -47,6 +52,7 @@ jobs:
           cache: 'npm'
 
       - name: Install npm dependencies
+        working-directory: .
         run: npm ci
 
       - name: Build plugin for release
@@ -58,6 +64,6 @@ jobs:
       - name: Upload plugin zip artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ${{ inputs.artifact-name }}
-          path: ${{ inputs.artifact-path }}
+          name: plugin-zip-${{ inputs.plugin-slug }}
+          path: ${{ inputs.working-directory }}/${{ inputs.plugin-slug }}.zip
           if-no-files-found: error

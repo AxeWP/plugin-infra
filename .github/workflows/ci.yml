@@ -55,3 +55,9 @@ jobs:
 
       - name: Lint JS and JSON
         run: npm run lint
+
+  actionlint:
+    name: actionlint
+    uses: ./.github/workflows/reusable-actionlint.yml
+    permissions:
+      contents: read

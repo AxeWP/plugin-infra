@@ -18,10 +18,20 @@ on:
         type: boolean
         default: false
       multisite:
-        description: 'Run multisite tests'
+        description: 'Run the multisite suite with `npm run test:php:multisite` (the plugin must define that script)'
         required: false
         type: boolean
         default: false
+      working-directory:
+        description: 'Plugin directory, relative to the repository root.'
+        required: false
+        type: string
+        default: '.'
+      plugin-slug:
+        description: 'Appended to artifact names, so they are unique when called once per plugin.'
+        required: false
+        type: string
+        default: ''
 
     secrets:
       CODECOV_TOKEN:
@@ -35,6 +45,9 @@ jobs:
     name: PHPUnit (PHP ${{ inputs.php-version }}, WP ${{ inputs.wp-version }})${{ inputs.coverage && ' (coverage)' || '' }}${{ inputs.multisite && ' (multisite)' || '' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
     env:
       WP_ENV_PHP_VERSION: ${{ inputs.php-version }}
       WP_ENV_CORE: ${{ inputs.wp-version == 'trunk' && 'WordPress/WordPress' || inputs.wp-version == 'latest' && 'latest' || format('https://wordpress.org/wordpress-{0}.zip', inputs.wp-version) }}
@@ -54,6 +67,8 @@ jobs:
 
       - name: Install Composer dependencies
         uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # v4.0.0
+        with:
+          working-directory: ${{ inputs.working-directory }}
 
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -62,6 +77,7 @@ jobs:
           cache: 'npm'
 
       - name: Install npm dependencies
+        working-directory: .
         run: npm ci
 
       - name: Build development assets
@@ -69,11 +85,13 @@ jobs:
 
       - name: Start the Docker testing environment
         uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4.0.0
+        env:
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
         with:
           timeout_minutes: 10
           max_attempts: 3
           command: |
-            npm run wp-env:test start --${{ inputs.multisite && ' --multisite' || '' }}${{ inputs.coverage && ' --xdebug=coverage' || '' }}
+            cd "$WORKING_DIRECTORY" && npm run wp-env:test start --${{ inputs.coverage && ' --xdebug=coverage' || '' }}
 
       - name: Log versions
         run: |
@@ -81,14 +99,15 @@ jobs:
           npm run wp-env:test -- run cli wp core version
 
       - name: Run PHPUnit tests
-        run: npm run test:php ${{ !inputs.coverage && '-- --no-coverage' || '' }}
+        # `test:php:multisite` runs PHPUnit with WP_MULTISITE=1; wp-env itself has no multisite flag.
+        run: npm run ${{ inputs.multisite && 'test:php:multisite' || 'test:php' }} ${{ !inputs.coverage && !inputs.multisite && '-- --no-coverage' || '' }}
 
       - name: Upload code coverage report
         if: ${{ inputs.coverage }}
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: tests/_output/php-coverage.xml
+          files: ${{ inputs.working-directory }}/tests/_output/php-coverage.xml
           flags: unit
           fail_ci_if_error: false
 
@@ -96,6 +115,6 @@ jobs:
         if: ${{ inputs.coverage }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: wp-code-coverage-${{ inputs.php-version }}-${{ inputs.wp-version }}
-          path: tests/_output/html
+          name: wp-code-coverage-${{ inputs.php-version }}-${{ inputs.wp-version }}${{ inputs.plugin-slug && format('-{0}', inputs.plugin-slug) || '' }}
+          path: ${{ inputs.working-directory }}/tests/_output/html
           overwrite: true
